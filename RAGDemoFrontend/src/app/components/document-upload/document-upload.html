@@ -1,0 +1,29 @@
+<div class="upload-container">
+  <p-toast></p-toast>
+
+  <input
+    type="file"
+    #fileInput
+    (change)="onFileSelected($event)"
+    accept=".pdf"
+    style="display: none">
+
+  <button
+    pButton
+    [label]="'admin.documentUpload.button' | translate"
+    icon="pi pi-upload"
+    class="p-button-lg upload-button"
+    (click)="fileInput.click()"
+    [disabled]="isUploading"></button>
+
+  <div *ngIf="selectedFileName" class="file-info">
+    <i class="pi pi-file-pdf"></i>
+    <span>{{ selectedFileName }}</span>
+  </div>
+
+  <p-progressBar
+    *ngIf="isUploading"
+    mode="indeterminate"
+    [style]="{'height': '6px', 'margin-top': '16px'}">
+  </p-progressBar>
+</div>

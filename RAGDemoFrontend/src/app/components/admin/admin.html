@@ -1,0 +1,129 @@
+<div class="admin-container">
+  <p-toast></p-toast>
+
+  <p-card class="admin-card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <h3><i class="pi pi-cog"></i> {{ 'admin.title' | translate }}</h3>
+      </div>
+    </ng-template>
+
+    <div class="admin-content">
+      <!-- Document Upload Section -->
+      <div class="section">
+        <h4><i class="pi pi-file-pdf"></i> {{ 'admin.documentUpload.title' | translate }}</h4>
+        <p>{{ 'admin.documentUpload.description' | translate }}</p>
+        <app-document-upload (documentUploaded)="onDocumentUploaded()"></app-document-upload>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Website Ingestion Section -->
+      <div class="section">
+        <h4><i class="pi pi-globe"></i> {{ 'admin.websiteIngestion.title' | translate }}</h4>
+        <p>{{ 'admin.websiteIngestion.description' | translate }}</p>
+
+        <div class="url-form">
+          <div class="form-field">
+            <label for="websiteUrl">{{ 'admin.websiteIngestion.urlLabel' | translate }}</label>
+            <input
+              pInputText
+              id="websiteUrl"
+              [(ngModel)]="websiteUrl"
+              [placeholder]="'admin.websiteIngestion.urlPlaceholder' | translate"
+              [disabled]="isIngesting"
+              class="url-input" />
+          </div>
+
+          <div class="form-field">
+            <label for="frameworkType">{{ 'admin.websiteIngestion.frameworkLabel' | translate }}</label>
+            <p-select
+              id="frameworkType"
+              [(ngModel)]="frameworkType"
+              [options]="frameworkOptions"
+              [placeholder]="'Select framework (optional)'"
+              [disabled]="isIngesting"
+              [showClear]="true"
+              class="framework-dropdown"></p-select>
+            <small class="form-hint">{{ 'admin.websiteIngestion.frameworkHint' | translate }}</small>
+          </div>
+
+          <div class="form-field" *ngIf="frameworkType && frameworkType !== 'static'">
+            <label for="customRoutes">{{ 'admin.websiteIngestion.routesLabel' | translate }}</label>
+            <textarea
+              pTextarea
+              id="customRoutes"
+              [(ngModel)]="customRoutesText"
+              [placeholder]="'admin.websiteIngestion.routesPlaceholder' | translate"
+              [disabled]="isIngesting"
+              [rows]="4"
+              class="routes-input"></textarea>
+            <small class="form-hint">{{ 'admin.websiteIngestion.routesHint' | translate }}</small>
+          </div>
+
+          <div class="form-options">
+            <div class="checkbox-field">
+              <p-checkbox
+                [(ngModel)]="includeLinks"
+                [binary]="true"
+                inputId="includeLinks"
+                [disabled]="isIngesting"></p-checkbox>
+              <label for="includeLinks">{{ 'admin.websiteIngestion.includeLinkedLabel' | translate }}</label>
+            </div>
+
+            <div class="form-field depth-field" *ngIf="includeLinks">
+              <label for="maxDepth">{{ 'admin.websiteIngestion.maxDepthLabel' | translate }}</label>
+              <input
+                pInputText
+                type="number"
+                id="maxDepth"
+                [(ngModel)]="maxDepth"
+                [min]="1"
+                [max]="3"
+                [disabled]="isIngesting"
+                class="depth-input" />
+            </div>
+          </div>
+
+          <button
+            pButton
+            [label]="'admin.websiteIngestion.button' | translate"
+            icon="pi pi-download"
+            (click)="ingestWebsite()"
+            [disabled]="!websiteUrl.trim() || isIngesting"
+            class="ingest-button"></button>
+
+          <p-progressBar
+            *ngIf="isIngesting"
+            mode="indeterminate"
+            [style]="{'height': '6px', 'margin-top': '16px'}"></p-progressBar>
+
+          <div *ngIf="processedUrls.length > 0" class="processed-urls">
+            <h5>{{ 'admin.websiteIngestion.processedUrls' | translate: {count: processedUrls.length} }}</h5>
+            <ul>
+              <li *ngFor="let url of processedUrls">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ url }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Information Section -->
+      <div class="section info-section">
+        <h4><i class="pi pi-info-circle"></i> {{ 'admin.information.title' | translate }}</h4>
+        <ul>
+          <li>{{ 'admin.information.items.documentUpload' | translate }}</li>
+          <li>{{ 'admin.information.items.websiteIngestion' | translate }}</li>
+          <li>{{ 'admin.information.items.frameworkSupport' | translate }}</li>
+          <li>{{ 'admin.information.items.customRoutes' | translate }}</li>
+          <li>{{ 'admin.information.items.linkedPages' | translate }}</li>
+          <li>{{ 'admin.information.items.processing' | translate }}</li>
+        </ul>
+      </div>
+    </div>
+  </p-card>
+</div>

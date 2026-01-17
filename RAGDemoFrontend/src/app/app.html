@@ -1,0 +1,36 @@
+<nav class="app-nav">
+  <div class="nav-content">
+    <h2><i class="pi pi-comments"></i> {{ 'app.title' | translate }}</h2>
+    <div class="nav-links">
+      <button pButton
+              routerLink="/chat"
+              icon="pi pi-comments"
+              [label]="'app.chat' | translate"
+              class="p-button-text"></button>
+      <button pButton
+              routerLink="/admin"
+              icon="pi pi-cog"
+              [label]="'app.admin' | translate"
+              class="p-button-text"></button>
+      <p-select
+        [(ngModel)]="currentLanguage"
+        [options]="languages"
+        (onChange)="changeLanguage($event)"
+        class="language-switcher">
+        <ng-template pTemplate="selectedItem">
+          <div class="language-option" *ngIf="getSelectedLanguage()">
+            <span class="lang-label">{{ getSelectedLanguage()?.label }}</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="item" let-language>
+          <div class="language-option">
+            <span class="lang-label">{{ language.label }}</span>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>
+

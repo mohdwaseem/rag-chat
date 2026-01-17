@@ -1,0 +1,83 @@
+{
+  "app": {
+    "title": "عرض RAG التوضيحي",
+    "chat": "المحادثة",
+    "admin": "الإدارة"
+  },
+  "chat": {
+    "title": "روبوت المحادثة بتقنية RAG",
+    "placeholder": "اكتب سؤالك...",
+    "thinking": "جاري التفكير...",
+    "clearChat": "مسح المحادثة",
+    "sendMessage": "إرسال الرسالة",
+    "welcomeMessage": "مرحباً! أنا مساعدك الذكي بتقنية RAG. يمكنني مساعدتك في العثور على المعلومات بسرعة ودقة.",
+    "errorMessage": "عذراً، حدث خطأ. يرجى التأكد من تشغيل الخادم الخلفي والمحاولة مرة أخرى."
+  },
+  "admin": {
+    "title": "إدارة المستندات",
+    "documentUpload": {
+      "title": "رفع المستندات",
+      "description": "قم برفع مستندات PDF إلى نظام RAG للإجابة على الأسئلة بالذكاء الاصطناعي.",
+      "button": "رفع مستند PDF",
+      "successTitle": "تم رفع المستند",
+      "successMessage": "تمت معالجة المستند وفهرسته بنجاح.",
+      "invalidFileTitle": "ملف غير صالح",
+      "invalidFileMessage": "يرجى تحديد ملف PDF",
+      "uploadFailedMessage": "فشل رفع المستند. تأكد من تشغيل الخادم الخلفي."
+    },
+    "websiteIngestion": {
+      "title": "استيراد محتوى الموقع",
+      "description": "قم باستخراج وفهرسة المحتوى من مواقع الويب لتعزيز قاعدة المعرفة.",
+      "urlLabel": "رابط الموقع",
+      "urlPlaceholder": "https://example.com",
+      "frameworkLabel": "نوع إطار عمل الموقع",
+      "frameworkHint": "حدد إذا كان الموقع يستخدم إطار عمل JavaScript",
+      "routesLabel": "المسارات المراد استخراجها",
+      "routesPlaceholder": "أدخل المسارات مفصولة بفواصل أو أسطر جديدة\nمثال: /home, /about, /products, /contact",
+      "routesHint": "أدخل المسارات التي تريد استخراجها (مثل: /home, /about, /products)",
+      "includeLinkedLabel": "تضمين الصفحات المرتبطة",
+      "maxDepthLabel": "العمق الأقصى (1-3)",
+      "button": "استيراد الموقع",
+      "frameworks": {
+        "static": "موقع ثابت",
+        "angular": "Angular",
+        "react": "React",
+        "vue": "Vue"
+      },
+      "successTitle": "تم استيراد الموقع",
+      "successMessage": "تمت معالجة {{chunks}} قطعة من {{pages}} صفحة بنجاح.",
+      "urlRequiredTitle": "الرابط مطلوب",
+      "urlRequiredMessage": "يرجى إدخال رابط الموقع للاستيراد.",
+      "routesRequiredTitle": "المسارات مطلوبة",
+      "routesRequiredMessage": "يرجى إدخال مسار واحد على الأقل لإطار العمل المحدد.",
+      "ingestionFailedTitle": "فشل الاستيراد",
+      "ingestionFailedMessage": "فشل استيراد الموقع. يرجى التحقق من الرابط والمحاولة مرة أخرى.",
+      "processedUrls": "الروابط المعالجة ({{count}}):"
+    },
+    "information": {
+      "title": "معلومات",
+      "items": {
+        "documentUpload": "رفع المستندات: يدعم ملفات PDF للرفع والفهرسة المباشرة",
+        "websiteIngestion": "استيراد المواقع: استخراج وفهرسة المحتوى النصي من صفحات الويب",
+        "frameworkSupport": "دعم أطر العمل: استخراج محسّن لـ Angular و React و Vue والمواقع الثابتة",
+        "customRoutes": "مسارات مخصصة: حدد المسارات الدقيقة للاستخراج لأطر عمل SPA (مثل: /home, /about, /products)",
+        "linkedPages": "الصفحات المرتبطة: الزحف الاختياري وفهرسة الصفحات المرتبطة حتى 3 مستويات",
+        "processing": "المعالجة: يتم تقسيم جميع المحتويات تلقائياً وتضمينها للبحث الدلالي"
+      }
+    }
+  },
+  "documentUpload": {
+    "button": "رفع مستند",
+    "successTitle": "تم رفع المستند",
+    "successMessage": "تمت معالجة المستند وفهرسته بنجاح.",
+    "invalidFileTitle": "ملف غير صالح",
+    "invalidFileMessage": "يرجى تحديد ملف PDF",
+    "uploadFailedMessage": "فشل رفع المستند. تأكد من تشغيل الخادم الخلفي."
+  },
+  "common": {
+    "languageSwitcher": {
+      "english": "English",
+      "arabic": "العربية"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "app": {
+    "title": "RAG Demo",
+    "chat": "Chat",
+    "admin": "Admin"
+  },
+  "chat": {
+    "title": "RAG Demo Chatbot",
+    "placeholder": "Type your question...",
+    "thinking": "Thinking...",
+    "clearChat": "Clear chat",
+    "sendMessage": "Send message",
+    "welcomeMessage": "Welcome! I'm your RAG-powered assistant. I can help you find information quickly and accurately.",
+    "errorMessage": "Sorry, I encountered an error. Please make sure the backend server is running and try again."
+  },
+  "admin": {
+    "title": "Document Management",
+    "documentUpload": {
+      "title": "Upload Documents",
+      "description": "Upload PDF documents to the RAG system for AI-powered question answering.",
+      "button": "Upload PDF Document",
+      "successTitle": "Document Uploaded",
+      "successMessage": "Document has been successfully processed and indexed.",
+      "invalidFileTitle": "Invalid File",
+      "invalidFileMessage": "Please select a PDF file",
+      "uploadFailedMessage": "Failed to upload document. Make sure the backend is running."
+    },
+    "websiteIngestion": {
+      "title": "Ingest Website Content",
+      "description": "Scrape and index content from websites to enhance the knowledge base.",
+      "urlLabel": "Website URL",
+      "urlPlaceholder": "https://example.com",
+      "frameworkLabel": "Website Framework Type",
+      "frameworkHint": "Select if the website uses a JavaScript framework",
+      "routesLabel": "Routes to Scrape",
+      "routesPlaceholder": "Enter routes separated by commas or new lines\nExample: /home, /about, /products, /contact",
+      "routesHint": "Enter the routes you want to scrape (e.g., /home, /about, /products)",
+      "includeLinkedLabel": "Include linked pages",
+      "maxDepthLabel": "Max Depth (1-3)",
+      "button": "Ingest Website",
+      "frameworks": {
+        "static": "Static Website",
+        "angular": "Angular",
+        "react": "React",
+        "vue": "Vue"
+      },
+      "successTitle": "Website Ingested",
+      "successMessage": "Successfully processed {{chunks}} chunks from {{pages}} page(s).",
+      "urlRequiredTitle": "URL Required",
+      "urlRequiredMessage": "Please enter a website URL to ingest.",
+      "routesRequiredTitle": "Routes Required",
+      "routesRequiredMessage": "Please enter at least one route for the selected framework.",
+      "ingestionFailedTitle": "Ingestion Failed",
+      "ingestionFailedMessage": "Failed to ingest website. Please check the URL and try again.",
+      "processedUrls": "Processed URLs ({{count}}):"
+    },
+    "information": {
+      "title": "Information",
+      "items": {
+        "documentUpload": "Document Upload: Supports PDF files for direct upload and indexing",
+        "websiteIngestion": "Website Ingestion: Extracts and indexes text content from web pages",
+        "frameworkSupport": "Framework Support: Optimized scraping for Angular, React, Vue, and static websites",
+        "customRoutes": "Custom Routes: Specify exact routes to scrape for SPA frameworks (e.g., /home, /about, /products)",
+        "linkedPages": "Linked Pages: Optionally crawl and index linked pages up to 3 levels deep",
+        "processing": "Processing: All content is automatically chunked and embedded for semantic search"
+      }
+    }
+  },
+  "documentUpload": {
+    "button": "Upload Document",
+    "successTitle": "Document Uploaded",
+    "successMessage": "Document has been successfully processed and indexed.",
+    "invalidFileTitle": "Invalid File",
+    "invalidFileMessage": "Please select a PDF file",
+    "uploadFailedMessage": "Failed to upload document. Make sure the backend is running."
+  },
+  "common": {
+    "languageSwitcher": {
+      "english": "English",
+      "arabic": "Arabic"
+    }
+  }
+}
