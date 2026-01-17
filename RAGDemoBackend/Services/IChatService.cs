@@ -124,7 +124,7 @@ namespace RAGDemoBackend.Services
         {
             // Mock RAG workflow for demo
             var maxResults = _configuration.GetValue<int>("DemoSettings:MaxSearchResults", 5);
-            var relevantDocs = await _documentService.SearchDocuments(question, maxResults);
+            var relevantDocs = await _documentService.SearchDocuments(question, maxResults, language, CancellationToken.None);
             var sources = relevantDocs.Select(d => d.Source).Distinct().ToList();
             var isArabic = language == "ar";
 
@@ -158,6 +158,8 @@ namespace RAGDemoBackend.Services
                 // This ensures we at least keep the actual Unicode string flowing through the app.
                 _logger.LogInformation("Using GitHub Models for question: {Question} (Language: {Language})", question, normalizedLanguage);
 
+                var isArabic = normalizedLanguage == "ar";
+
                 // Get relevant documents from vector search with increased results
                 var maxResults = _configuration.GetValue<int>("DemoSettings:MaxSearchResults", 10);
                 var useQueryExpansion = _configuration.GetValue<bool>("DemoSettings:UseQueryExpansion", true);
@@ -171,12 +173,12 @@ namespace RAGDemoBackend.Services
                 {
                     // Enhanced: Search with query expansion
                     _logger.LogInformation("Using query expansion for better retrieval");
-                    relevantDocs = await SearchWithQueryExpansion(question, initialSearchLimit, cancellationToken);
+                    relevantDocs = await SearchWithQueryExpansion(question, initialSearchLimit, normalizedLanguage, cancellationToken);
                 }
                 else
                 {
                     // Standard search
-                    relevantDocs = await _documentService.SearchDocuments(question, initialSearchLimit, cancellationToken);
+                    relevantDocs = await _documentService.SearchDocuments(question, initialSearchLimit, normalizedLanguage, cancellationToken);
                 }
                 
                 // Apply source diversity to ensure balanced results from all sources
@@ -213,7 +215,6 @@ namespace RAGDemoBackend.Services
                 var modelId = _modelId ?? "gpt-4o-mini";
 
                 // Determine response language
-                var isArabic = normalizedLanguage == "ar";
                 var languageInstruction = isArabic 
                     ? "\n7. CRITICAL: You MUST respond in Arabic language. All your answers must be in Arabic."
                     : "\n7. CRITICAL: You MUST respond in English language. All your answers must be in English.";
@@ -294,10 +295,10 @@ Do not provide general knowledge answers.{languageInstruction}";
             }
         }
 
-        private async Task<List<DocumentChunk>> SearchWithQueryExpansion(string question, int maxResults, CancellationToken cancellationToken)
+        private async Task<List<DocumentChunk>> SearchWithQueryExpansion(string question, int maxResults, string? language, CancellationToken cancellationToken)
         {
             // Search with original query
-            var results = await _documentService.SearchDocuments(question, maxResults, cancellationToken);
+            var results = await _documentService.SearchDocuments(question, maxResults, language, cancellationToken);
             
             // If results are good enough, return them
             if (results.Count >= maxResults / 2)
@@ -316,7 +317,7 @@ Do not provide general knowledge answers.{languageInstruction}";
             
             foreach (var variation in queryVariations)
             {
-                var variationResults = await _documentService.SearchDocuments(variation, maxResults / 2, cancellationToken);
+                var variationResults = await _documentService.SearchDocuments(variation, maxResults / 2, language, cancellationToken);
                 allResults.AddRange(variationResults);
             }
 
