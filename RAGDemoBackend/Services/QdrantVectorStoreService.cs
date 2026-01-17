@@ -8,7 +8,7 @@ namespace RAGDemoBackend.Services
     {
         Task InitializeCollectionAsync();
         Task<bool> UpsertDocumentChunksAsync(List<DocumentChunk> chunks, List<float[]> embeddings);
-        Task<List<(DocumentChunk Chunk, float Score)>> SearchSimilarChunksAsync(float[] queryEmbedding, int limit = 5);
+        Task<List<(DocumentChunk Chunk, float Score)>> SearchSimilarChunksAsync(float[] queryEmbedding, int limit = 5, string? language = null);
         Task<bool> DeleteDocumentAsync(string documentSource);
         Task<int> GetDocumentCountAsync();
     }
@@ -106,7 +106,8 @@ namespace RAGDemoBackend.Services
                             ["content"] = chunk.Content,
                             ["source"] = chunk.Source,
                             ["index"] = chunk.Index,
-                            ["chunkId"] = chunk.Id.ToString()
+                            ["chunkId"] = chunk.Id.ToString(),
+                            ["language"] = chunk.Metadata.TryGetValue("language", out var lang) ? lang : "en"
                         }
                     };
 
@@ -146,7 +147,8 @@ namespace RAGDemoBackend.Services
 
         public async Task<List<(DocumentChunk Chunk, float Score)>> SearchSimilarChunksAsync(
             float[] queryEmbedding, 
-            int limit = 5)
+            int limit = 5,
+            string? language = null)
         {
             try
             {
@@ -156,11 +158,31 @@ namespace RAGDemoBackend.Services
                 _logger.LogInformation("Searching Qdrant with limit={Limit}, scoreThreshold={Threshold}", 
                     limit, minRelevanceScore);
                 
+                Filter? filter = null;
+                if (!string.IsNullOrWhiteSpace(language))
+                {
+                    filter = new Filter
+                    {
+                        Must =
+                        {
+                            new Condition
+                            {
+                                Field = new FieldCondition
+                                {
+                                    Key = "language",
+                                    Match = new Match { Keyword = language }
+                                }
+                            }
+                        }
+                    };
+                }
+
                 var results = await _client.SearchAsync(
                     collectionName: _collectionName,
                     vector: queryEmbedding,
                     limit: (ulong)limit,
-                    scoreThreshold: minRelevanceScore
+                    scoreThreshold: minRelevanceScore,
+                    filter: filter
                 );
 
                 var chunks = new List<(DocumentChunk, float)>();
@@ -188,7 +210,11 @@ namespace RAGDemoBackend.Services
                             Id = Guid.Parse(result.Payload["chunkId"].StringValue),
                             Content = result.Payload["content"].StringValue,
                             Source = result.Payload["source"].StringValue,
-                            Index = (int)result.Payload["index"].IntegerValue
+                            Index = (int)result.Payload["index"].IntegerValue,
+                            Metadata = new Dictionary<string, string>
+                            {
+                                { "language", result.Payload["language"].StringValue }
+                            }
                         };
                         
                         _chunkCache[pointId] = chunk;

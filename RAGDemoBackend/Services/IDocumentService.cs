@@ -23,6 +23,7 @@ namespace RAGDemoBackend.Services
             CancellationToken cancellationToken);
         Task<List<DocumentChunk>> SearchDocuments(string query, int topK = 5);
         Task<List<DocumentChunk>> SearchDocuments(string query, int topK, CancellationToken cancellationToken);
+        Task<List<DocumentChunk>> SearchDocuments(string query, int topK, string? language, CancellationToken cancellationToken);
         Task<bool> DeleteDocument(string documentSource);
         Task<int> GetDocumentCount();
     }
@@ -150,7 +151,11 @@ namespace RAGDemoBackend.Services
                     Index = i / chunkSize,
                     SourceType = SourceType.PDF,
                     FilePath = sourceFilePath,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "language", DetectLanguage(chunk) }
+                    }
                 });
             }
 
@@ -164,6 +169,11 @@ namespace RAGDemoBackend.Services
 
         public async Task<List<DocumentChunk>> SearchDocuments(string query, int topK, CancellationToken cancellationToken)
         {
+            return await SearchDocuments(query, topK, null, cancellationToken);
+        }
+
+        public async Task<List<DocumentChunk>> SearchDocuments(string query, int topK, string? language, CancellationToken cancellationToken)
+        {
             try
             {
                 _logger.LogInformation("Searching for: {Query}", query);
@@ -176,8 +186,8 @@ namespace RAGDemoBackend.Services
                 // Generate embedding for the query
                 var queryEmbedding = await _embeddingService.GenerateEmbeddingAsync(query, cancellationToken);
 
-                // Search in Qdrant
-                var results = await _vectorStore.SearchSimilarChunksAsync(queryEmbedding, topK);
+                // Search in Qdrant (optionally filter by language)
+                var results = await _vectorStore.SearchSimilarChunksAsync(queryEmbedding, topK, language);
 
                 _logger.LogInformation("Found {Count} results for query", results.Count);
 
@@ -715,7 +725,8 @@ namespace RAGDemoBackend.Services
                     {
                         { "url", sourceUrl },
                         { "domain", uri.Host },
-                        { "scrapedAt", DateTime.UtcNow.ToString("o") }
+                        { "scrapedAt", DateTime.UtcNow.ToString("o") },
+                        { "language", DetectLanguage(chunk) }
                     }
                 });
             }
@@ -726,6 +737,21 @@ namespace RAGDemoBackend.Services
             }
 
             return chunks;
+        }
+
+        private string DetectLanguage(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return "en";
+            }
+
+            var arabicCount = text.Count(c =>
+                (c >= '\u0600' && c <= '\u06FF') ||
+                (c >= '\u0750' && c <= '\u077F') ||
+                (c >= '\u08A0' && c <= '\u08FF'));
+
+            return arabicCount > 0 ? "ar" : "en";
         }
     }
 }
