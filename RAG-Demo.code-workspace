@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "name": "Backend",
+      "path": "RAGDemoBackend"
+    },
+    {
+      "name": "Frontend",
+      "path": "RAGDemoFrontend"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/bin": true,
+      "**/obj": true
+    }
+  }
+}

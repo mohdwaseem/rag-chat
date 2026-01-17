@@ -1,0 +1,85 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-nav {
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    h2 {
+      margin: 0;
+      color: #667eea;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+
+      i {
+        font-size: 1.75rem;
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+
+      button {
+        font-weight: 500;
+
+        &:hover {
+          background-color: rgba(102, 126, 234, 0.1) !important;
+        }
+      }
+
+      .language-switcher {
+        min-width: 150px;
+
+        .language-option {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          .lang-label {
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* RTL adjustments for navigation */
+[dir="rtl"] .app-nav {
+  .nav-content {
+    h2 {
+      flex-direction: row-reverse;
+    }
+
+    .nav-links {
+      flex-direction: row-reverse;
+    }
+  }
+}
+

@@ -1,0 +1,28 @@
+# Sample Product Documentation
+
+## Product Overview
+Our RAG Demo product is a state-of-the-art document retrieval and chat system that combines vector search with language models.
+
+## Pricing
+- Basic Plan: $29/month - Up to 100 documents
+- Pro Plan: $99/month - Up to 1,000 documents
+- Enterprise Plan: Contact sales - Unlimited documents
+
+## Features
+- PDF document processing and indexing
+- Semantic search using vector embeddings
+- Natural language question answering
+- Real-time chat interface
+- Multi-language support
+- REST API access
+
+## Technical Specifications
+- Built with .NET 8.0
+- Uses Qdrant vector database
+- Supports PDFs up to 50MB
+- 384-dimensional embeddings
+- Cosine similarity search
+- 99.9% uptime SLA
+
+## Support
+For technical support, contact support@example.com or visit our help center.

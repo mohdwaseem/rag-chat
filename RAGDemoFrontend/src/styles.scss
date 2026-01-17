@@ -1,0 +1,56 @@
+/* Import Bootstrap */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Import PrimeNG theme and icons */
+@import 'primeicons/primeicons.css';
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #333;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+
+  /* Adjust PrimeNG components for RTL */
+  .p-button-icon-left {
+    margin-right: 0;
+    margin-left: 0.5rem;
+  }
+
+  .p-button-icon-right {
+    margin-left: 0;
+    margin-right: 0.5rem;
+  }
+
+  .p-inputtext {
+    text-align: right;
+  }
+
+  .p-checkbox {
+    margin-right: 0;
+    margin-left: 0.5rem;
+  }
+
+  /* Flip icons for RTL */
+  .pi-arrow-right::before {
+    content: "\e933"; /* arrow-left */
+  }
+
+  .pi-arrow-left::before {
+    content: "\e932"; /* arrow-right */
+  }
+}
+
+/* Arabic font support */
+[lang="ar"] {
+  font-family: 'Segoe UI', 'Arial', 'Tahoma', sans-serif;
+}
