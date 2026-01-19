@@ -204,6 +204,7 @@ Models/model.onnx
 Models/vocab.txt
 Models/*.onnx
 MigrationBackup/
+Models/large/model.onnx_data
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
