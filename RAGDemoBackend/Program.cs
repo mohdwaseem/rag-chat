@@ -1,12 +1,21 @@
 // Program.cs
 using System.IO.Compression;
+using System.Text.Json;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using RAGDemoBackend.Services;
+using RAGDemoBackend.Services.HealthChecks;
 using Serilog;
+using Serilog.Context;
+using Qdrant.Client;
 
 // Configure Serilog from appsettings.json
 var configuration = new ConfigurationBuilder()
@@ -67,7 +76,10 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
-builder.Services.AddHealthChecks();
+// Dependency health checks
+builder.Services.AddHealthChecks()
+    .AddCheck<QdrantHealthCheck>("qdrant", tags: ["ready"]) 
+    .AddCheck<EmbeddingModelHealthCheck>("embedding_model", tags: ["ready"]);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -100,6 +112,36 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+// JWT Authentication
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RAGDemoBackend";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "RAGDemoFrontend";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "CHANGE_ME_IN_PRODUCTION";
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireClaim("role", "admin");
+    });
+});
+
 builder.Services.AddHttpLogging(o =>
 {
     o.LoggingFields = HttpLoggingFields.RequestMethod |
@@ -123,6 +165,17 @@ builder.Services.AddSingleton<IEmbeddingService, LocalEmbeddingService>();
 builder.Services.AddSingleton<IVectorStoreService, QdrantVectorStoreService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddSingleton<IDevUserStore, DevUserStore>();
+
+// Register a shared QdrantClient for health checks (and optionally other services)
+builder.Services.AddSingleton(sp =>
+{
+    var cfg = sp.GetRequiredService<IConfiguration>();
+    var host = cfg["Qdrant:Host"] ?? "localhost";
+    var port = int.Parse(cfg["Qdrant:Port"] ?? "6334");
+    var useHttps = bool.Parse(cfg["Qdrant:UseHttps"] ?? "false");
+    return new QdrantClient(host, port, useHttps);
+});
 
 // Background init for vector store
 builder.Services.AddHostedService<QdrantInitializerHostedService>();
@@ -133,9 +186,26 @@ var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(allowedOrigins)
+    {
+        var origins = allowedOrigins;
+
+        if (!builder.Environment.IsDevelopment())
+        {
+            origins = origins.Where(o =>
+            {
+                if (!Uri.TryCreate(o, UriKind.Absolute, out var uri))
+                {
+                    return false;
+                }
+
+                return uri.Scheme == Uri.UriSchemeHttps;
+            }).ToArray();
+        }
+
+        policy.WithOrigins(origins)
               .AllowAnyMethod()
-              .AllowAnyHeader());
+              .AllowAnyHeader();
+    });
 });
 
 var app = builder.Build();
@@ -145,6 +215,12 @@ var app = builder.Build();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Required when running behind reverse proxies / load balancers
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
@@ -158,7 +234,18 @@ app.Use(async (context, next) =>
         context.Request.Headers[headerName] = requestId;
     }
     context.Response.Headers[headerName] = requestId;
-    await next();
+
+    var userId = context.User?.Identity?.IsAuthenticated == true
+        ? context.User.Identity?.Name ?? context.User.FindFirst("sub")?.Value
+        : null;
+
+    using (LogContext.PushProperty("RequestId", requestId.ToString()))
+    using (LogContext.PushProperty("TraceId", context.TraceIdentifier))
+    using (LogContext.PushProperty("Path", context.Request.Path.ToString()))
+    using (LogContext.PushProperty("UserId", userId))
+    {
+        await next();
+    }
 });
 
  app.UseHttpsRedirection();
@@ -166,10 +253,35 @@ app.Use(async (context, next) =>
  app.UseHttpLogging();
  app.UseRateLimiter();
  app.UseCors("AllowFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResultStatusCodes =
+    {
+        [Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy] = StatusCodes.Status200OK,
+        [Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded] = StatusCodes.Status503ServiceUnavailable,
+        [Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+    },
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var payload = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description
+            })
+        };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+    }
+});
 
 // Create necessary folders
 var sampleDocsPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "SampleDocuments");

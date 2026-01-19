@@ -1,4 +1,3 @@
-using System.Numerics.Tensors;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.ML.OnnxRuntime;
@@ -16,17 +15,25 @@ namespace RAGDemoBackend.Services
         private readonly Dictionary<string, int> _vocabulary;
         private readonly ILogger<LocalEmbeddingService> _logger;
         private readonly bool _isModelAvailable;
-        private const int MaxTokens = 128;
-        private const int EmbeddingDimension = 384;
+        private readonly int _maxTokens;
+        private readonly int _embeddingDimension;
+        private readonly string _modelPath;
+        private readonly string _vocabPath;
 
-        public LocalEmbeddingService(ILogger<LocalEmbeddingService> logger)
+        public LocalEmbeddingService(ILogger<LocalEmbeddingService> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _maxTokens = configuration.GetValue<int>("Embeddings:MaxTokens", 128);
+            _embeddingDimension = configuration.GetValue<int>("Embeddings:Dimension", 384);
+            _modelPath = configuration["Embeddings:ModelPath"] ?? Path.Combine("Models", "model.onnx");
+            _vocabPath = configuration["Embeddings:VocabPath"] ?? Path.Combine("Models", "vocab.txt");
             _vocabulary = BuildVocabulary();
             
             try
             {
-                var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "Models", "model.onnx");
+                var modelPath = Path.IsPathRooted(_modelPath)
+                    ? _modelPath
+                    : Path.Combine(Directory.GetCurrentDirectory(), _modelPath);
                 
                 if (File.Exists(modelPath))
                 {
@@ -57,7 +64,7 @@ namespace RAGDemoBackend.Services
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                return new float[EmbeddingDimension];
+                return new float[_embeddingDimension];
             }
 
             return await Task.Run(() =>
@@ -118,21 +125,28 @@ namespace RAGDemoBackend.Services
                 var tokens = Tokenize(text);
                 var inputTensor = new DenseTensor<long>(new[] { 1, tokens.Length });
                 var attentionMask = new DenseTensor<long>(new[] { 1, tokens.Length });
-                var tokenTypeIds = new DenseTensor<long>(new[] { 1, tokens.Length });
-
                 for (int i = 0; i < tokens.Length; i++)
                 {
                     inputTensor[0, i] = tokens[i];
                     attentionMask[0, i] = 1;
-                    tokenTypeIds[0, i] = 0; // All zeros for single sentence
                 }
 
                 var inputs = new List<NamedOnnxValue>
                 {
                     NamedOnnxValue.CreateFromTensor("input_ids", inputTensor),
-                    NamedOnnxValue.CreateFromTensor("attention_mask", attentionMask),
-                    NamedOnnxValue.CreateFromTensor("token_type_ids", tokenTypeIds)
+                    NamedOnnxValue.CreateFromTensor("attention_mask", attentionMask)
                 };
+
+                // Some models (e.g., E5) do not have token_type_ids
+                if (_session!.InputMetadata.ContainsKey("token_type_ids"))
+                {
+                    var tokenTypeIds = new DenseTensor<long>(new[] { 1, tokens.Length });
+                    for (int i = 0; i < tokens.Length; i++)
+                    {
+                        tokenTypeIds[0, i] = 0;
+                    }
+                    inputs.Add(NamedOnnxValue.CreateFromTensor("token_type_ids", tokenTypeIds));
+                }
 
                 using var results = _session!.Run(inputs);
                 var embeddings = results.First().AsTensor<float>();
@@ -180,7 +194,7 @@ namespace RAGDemoBackend.Services
         /// </summary>
         private float[] GenerateFallbackEmbedding(string text)
         {
-            var embedding = new float[EmbeddingDimension];
+            var embedding = new float[_embeddingDimension];
             var words = Regex.Split(text.ToLower(), @"\W+")
                             .Where(w => !string.IsNullOrEmpty(w))
                             .ToList();
@@ -189,9 +203,9 @@ namespace RAGDemoBackend.Services
             foreach (var word in words)
             {
                 var hash = GetStableHash(word);
-                for (int i = 0; i < EmbeddingDimension; i++)
+                for (int i = 0; i < _embeddingDimension; i++)
                 {
-                    var idx = (hash + i * 31) % EmbeddingDimension;
+                    var idx = (hash + i * 31) % _embeddingDimension;
                     embedding[idx] += 1.0f / (float)Math.Sqrt(words.Count);
                 }
             }
@@ -207,7 +221,7 @@ namespace RAGDemoBackend.Services
             var words = Regex.Matches(text, @"[\p{L}\p{N}]+")
                              .Select(m => m.Value)
                              .Where(w => !string.IsNullOrEmpty(w))
-                             .Take(MaxTokens)
+                             .Take(_maxTokens)
                              .ToList();
 
             var tokens = new List<long> { 101 }; // [CLS] token
@@ -229,12 +243,12 @@ namespace RAGDemoBackend.Services
             tokens.Add(102); // [SEP] token
 
             // Pad to MaxTokens
-            while (tokens.Count < MaxTokens)
+            while (tokens.Count < _maxTokens)
             {
                 tokens.Add(0); // [PAD] token
             }
 
-            return tokens.Take(MaxTokens).ToArray();
+            return tokens.Take(_maxTokens).ToArray();
         }
 
         private static string NormalizeText(string text)
@@ -247,12 +261,19 @@ namespace RAGDemoBackend.Services
             // Normalize common Arabic forms and collapse whitespace.
             // This is intentionally lightweight (no heavy NLP deps).
             var normalized = text
+                .Normalize(NormalizationForm.FormKC)
                 .Replace('\u0640', ' ') // tatweel
+                // Unify common Arabic letter variants
+                .Replace('?', '?')
+                .Replace('?', '?')
                 .Replace('?', '?')
                 .Replace('?', '?')
                 .Replace('?', '?')
                 .Replace('?', '?')
                 .Replace('?', '?');
+
+            // Remove common Arabic diacritics (harakat)
+            normalized = Regex.Replace(normalized, "[\u064B-\u0652\u0670]", string.Empty);
 
             normalized = Regex.Replace(normalized, @"\s+", " ").Trim();
             return normalized;
@@ -260,7 +281,9 @@ namespace RAGDemoBackend.Services
 
         private Dictionary<string, int> BuildVocabulary()
         {
-            var vocabPath = Path.Combine(Directory.GetCurrentDirectory(), "Models", "vocab.txt");
+            var vocabPath = Path.IsPathRooted(_vocabPath)
+                ? _vocabPath
+                : Path.Combine(Directory.GetCurrentDirectory(), _vocabPath);
             
             if (File.Exists(vocabPath))
             {

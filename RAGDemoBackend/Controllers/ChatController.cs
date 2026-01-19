@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using RAGDemoBackend.Models;
 using RAGDemoBackend.Services;
@@ -12,11 +13,13 @@ namespace RAGDemoBackend.Controllers
     {
         private readonly IChatService _chatService;
         private readonly IDocumentService _documentService;
+        private readonly IConfiguration _configuration;
 
-        public ChatController(IChatService chatService, IDocumentService documentService)
+        public ChatController(IChatService chatService, IDocumentService documentService, IConfiguration configuration)
         {
             _chatService = chatService;
             _documentService = documentService;
+            _configuration = configuration;
         }
 
         [HttpPost("ask")]
@@ -32,20 +35,67 @@ namespace RAGDemoBackend.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded");
 
-            // Save file temporarily
-            var tempPath = Path.GetTempFileName();
-            using (var stream = new FileStream(tempPath, FileMode.Create))
+            var maxBytes = _configuration.GetValue<long>("Uploads:MaxBytes", 10 * 1024 * 1024); // 10 MB
+            if (file.Length > maxBytes)
             {
-                await file.CopyToAsync(stream, cancellationToken);
+                return BadRequest($"File too large. Max allowed size is {maxBytes} bytes.");
             }
 
-            // Process the PDF
-            var chunks = await _documentService.ProcessPDF(tempPath, cancellationToken);
+            var allowedContentTypes = _configuration.GetSection("Uploads:AllowedContentTypes").Get<string[]>()
+                                     ?? new[] { "application/pdf" };
+            if (!allowedContentTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+            {
+                return BadRequest($"Unsupported content type '{file.ContentType}'.");
+            }
 
-            // Clean up
-            System.IO.File.Delete(tempPath);
+            var allowedExtensions = _configuration.GetSection("Uploads:AllowedExtensions").Get<string[]>()
+                                    ?? new[] { ".pdf" };
+            var extension = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(extension) || !allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            {
+                return BadRequest("Unsupported file extension.");
+            }
 
-            return Ok(new { message = $"Processed {file.FileName}", chunksCreated = chunks.Count });
+            // Store uploads in an app-controlled temp folder (avoid sharing global temp paths)
+            var uploadsTempPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "TempUploads");
+            Directory.CreateDirectory(uploadsTempPath);
+
+            var tempPath = Path.Combine(uploadsTempPath, $"{Guid.NewGuid():n}{extension}");
+
+            try
+            {
+                await using (var stream = new FileStream(
+                    tempPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 64 * 1024,
+                    options: FileOptions.Asynchronous | FileOptions.SequentialScan))
+                {
+                    await file.CopyToAsync(stream, cancellationToken);
+                }
+
+                // Malware scanning integration point.
+                // In production, scan `tempPath` via an AV engine/service (e.g., ClamAV) before processing.
+
+                var chunks = await _documentService.ProcessPDF(tempPath, cancellationToken);
+
+                return Ok(new { message = $"Processed {file.FileName}", chunksCreated = chunks.Count });
+            }
+            finally
+            {
+                try
+                {
+                    if (System.IO.File.Exists(tempPath))
+                    {
+                        System.IO.File.Delete(tempPath);
+                    }
+                }
+                catch
+                {
+                    // Best-effort cleanup; do not mask the original exception.
+                }
+            }
         }
 
         [HttpPost("ingest-url")]
@@ -100,10 +150,13 @@ namespace RAGDemoBackend.Controllers
         public async Task<ActionResult> GetStats()
         {
             var count = await _documentService.GetDocumentCount();
+            var modelName = _configuration["Embeddings:ModelName"] ?? "default";
+            var dimension = _configuration.GetValue<int>("Embeddings:Dimension", 384);
             return Ok(new { 
                 documentChunks = count, 
                 vectorStore = "Qdrant",
-                embeddingModel = "Local (all-MiniLM-L6-v2 compatible)",
+                embeddingModel = modelName,
+                embeddingDimension = dimension,
                 timestamp = DateTime.UtcNow 
             });
         }
@@ -143,6 +196,24 @@ namespace RAGDemoBackend.Controllers
             if (success)
                 return Ok(new { message = $"Deleted {documentName}" });
             return NotFound(new { message = $"Document {documentName} not found" });
+        }
+
+        [Authorize(Policy = "Admin")]
+        [HttpPost("admin/clear-model")]
+        public async Task<ActionResult> ClearModel([FromBody] ClearModelRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var success = await _documentService.DeleteByModel(request.ModelName);
+            if (success)
+            {
+                return Ok(new { message = $"Deleted vectors for model '{request.ModelName}'" });
+            }
+
+            return BadRequest(new { message = "Failed to delete vectors for the specified model" });
         }
     }
 }

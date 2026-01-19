@@ -25,6 +25,7 @@ namespace RAGDemoBackend.Services
         Task<List<DocumentChunk>> SearchDocuments(string query, int topK, CancellationToken cancellationToken);
         Task<List<DocumentChunk>> SearchDocuments(string query, int topK, string? language, CancellationToken cancellationToken);
         Task<bool> DeleteDocument(string documentSource);
+        Task<bool> DeleteByModel(string modelName);
         Task<int> GetDocumentCount();
     }
 
@@ -35,6 +36,7 @@ namespace RAGDemoBackend.Services
         private readonly IVectorStoreService _vectorStore;
         private readonly ILogger<DocumentService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly string _modelName;
 
         public DocumentService(
             IEmbeddingService embeddingService,
@@ -46,6 +48,7 @@ namespace RAGDemoBackend.Services
             _vectorStore = vectorStore;
             _logger = logger;
             _configuration = configuration;
+            _modelName = _configuration["Embeddings:ModelName"] ?? "default";
         }
 
         public async Task<List<DocumentChunk>> ProcessPDF(string filePath)
@@ -154,7 +157,8 @@ namespace RAGDemoBackend.Services
                     CreatedAt = DateTime.UtcNow,
                     Metadata = new Dictionary<string, string>
                     {
-                        { "language", DetectLanguage(chunk) }
+                        { "language", DetectLanguage(chunk) },
+                        { "modelName", _modelName }
                     }
                 });
             }
@@ -187,7 +191,7 @@ namespace RAGDemoBackend.Services
                 var queryEmbedding = await _embeddingService.GenerateEmbeddingAsync(query, cancellationToken);
 
                 // Search in Qdrant (optionally filter by language)
-                var results = await _vectorStore.SearchSimilarChunksAsync(queryEmbedding, topK, language);
+                var results = await _vectorStore.SearchSimilarChunksAsync(queryEmbedding, topK, language, _modelName);
 
                 _logger.LogInformation("Found {Count} results for query", results.Count);
 
@@ -203,6 +207,11 @@ namespace RAGDemoBackend.Services
         public async Task<bool> DeleteDocument(string documentSource)
         {
             return await _vectorStore.DeleteDocumentAsync(documentSource);
+        }
+
+        public async Task<bool> DeleteByModel(string modelName)
+        {
+            return await _vectorStore.DeleteByModelAsync(modelName);
         }
 
         public async Task<int> GetDocumentCount()
@@ -256,6 +265,7 @@ namespace RAGDemoBackend.Services
                 _logger.LogInformation("Generated embeddings for {Count} chunks from website", embeddings.Count);
 
                 // Store in Qdrant
+                
                 var success = await _vectorStore.UpsertDocumentChunksAsync(allChunks, embeddings);
 
                 if (success)
@@ -726,7 +736,8 @@ namespace RAGDemoBackend.Services
                         { "url", sourceUrl },
                         { "domain", uri.Host },
                         { "scrapedAt", DateTime.UtcNow.ToString("o") },
-                        { "language", DetectLanguage(chunk) }
+                        { "language", DetectLanguage(chunk) },
+                        { "modelName", _modelName }
                     }
                 });
             }

@@ -8,8 +8,9 @@ namespace RAGDemoBackend.Services
     {
         Task InitializeCollectionAsync();
         Task<bool> UpsertDocumentChunksAsync(List<DocumentChunk> chunks, List<float[]> embeddings);
-        Task<List<(DocumentChunk Chunk, float Score)>> SearchSimilarChunksAsync(float[] queryEmbedding, int limit = 5, string? language = null);
+        Task<List<(DocumentChunk Chunk, float Score)>> SearchSimilarChunksAsync(float[] queryEmbedding, int limit = 5, string? language = null, string? modelName = null);
         Task<bool> DeleteDocumentAsync(string documentSource);
+        Task<bool> DeleteByModelAsync(string modelName);
         Task<int> GetDocumentCountAsync();
     }
 
@@ -19,6 +20,7 @@ namespace RAGDemoBackend.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<QdrantVectorStoreService> _logger;
         private readonly string _collectionName;
+        private readonly ulong _embeddingDimension;
         private readonly Dictionary<ulong, DocumentChunk> _chunkCache;
 
         public QdrantVectorStoreService(
@@ -27,7 +29,10 @@ namespace RAGDemoBackend.Services
         {
             _configuration = configuration;
             _logger = logger;
-            _collectionName = configuration["Qdrant:CollectionName"] ?? "documents";
+            _collectionName = configuration["Embeddings:CollectionName"]
+                ?? configuration["Qdrant:CollectionName"]
+                ?? "documents";
+            _embeddingDimension = configuration.GetValue<ulong>("Embeddings:Dimension", 384);
             _chunkCache = new Dictionary<ulong, DocumentChunk>();
 
             var host = configuration["Qdrant:Host"] ?? "localhost";
@@ -48,12 +53,12 @@ namespace RAGDemoBackend.Services
 
                 if (!exists)
                 {
-                    // Create collection with 384 dimensions (all-MiniLM-L6-v2)
+                    // Create collection with configured dimensions
                     await _client.CreateCollectionAsync(
                         collectionName: _collectionName,
                         vectorsConfig: new VectorParams
                         {
-                            Size = 384,
+                            Size = _embeddingDimension,
                             Distance = Distance.Cosine
                         }
                     );
@@ -107,7 +112,8 @@ namespace RAGDemoBackend.Services
                             ["source"] = chunk.Source,
                             ["index"] = chunk.Index,
                             ["chunkId"] = chunk.Id.ToString(),
-                            ["language"] = chunk.Metadata.TryGetValue("language", out var lang) ? lang : "en"
+                            ["language"] = chunk.Metadata.TryGetValue("language", out var lang) ? lang : "en",
+                            ["modelName"] = chunk.Metadata.TryGetValue("modelName", out var modelName) ? modelName : "default"
                         }
                     };
 
@@ -148,7 +154,8 @@ namespace RAGDemoBackend.Services
         public async Task<List<(DocumentChunk Chunk, float Score)>> SearchSimilarChunksAsync(
             float[] queryEmbedding, 
             int limit = 5,
-            string? language = null)
+            string? language = null,
+            string? modelName = null)
         {
             try
             {
@@ -159,22 +166,36 @@ namespace RAGDemoBackend.Services
                     limit, minRelevanceScore);
                 
                 Filter? filter = null;
-                if (!string.IsNullOrWhiteSpace(language))
+                if (!string.IsNullOrWhiteSpace(language) || !string.IsNullOrWhiteSpace(modelName))
                 {
-                    filter = new Filter
+                    var mustConditions = new List<Condition>();
+
+                    if (!string.IsNullOrWhiteSpace(language))
                     {
-                        Must =
+                        mustConditions.Add(new Condition
                         {
-                            new Condition
+                            Field = new FieldCondition
                             {
-                                Field = new FieldCondition
-                                {
-                                    Key = "language",
-                                    Match = new Match { Keyword = language }
-                                }
+                                Key = "language",
+                                Match = new Match { Keyword = language }
                             }
-                        }
-                    };
+                        });
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(modelName))
+                    {
+                        mustConditions.Add(new Condition
+                        {
+                            Field = new FieldCondition
+                            {
+                                Key = "modelName",
+                                Match = new Match { Keyword = modelName }
+                            }
+                        });
+                    }
+
+                    filter = new Filter();
+                    filter.Must.AddRange(mustConditions);
                 }
 
                 var results = await _client.SearchAsync(
@@ -213,7 +234,8 @@ namespace RAGDemoBackend.Services
                             Index = (int)result.Payload["index"].IntegerValue,
                             Metadata = new Dictionary<string, string>
                             {
-                                { "language", result.Payload["language"].StringValue }
+                                { "language", result.Payload["language"].StringValue },
+                                { "modelName", result.Payload["modelName"].StringValue }
                             }
                         };
                         
@@ -281,6 +303,54 @@ namespace RAGDemoBackend.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete document from Qdrant");
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteByModelAsync(string modelName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(modelName))
+                {
+                    _logger.LogWarning("Model name is required to delete vectors");
+                    return false;
+                }
+
+                var filter = new Filter
+                {
+                    Must =
+                    {
+                        new Condition
+                        {
+                            Field = new FieldCondition
+                            {
+                                Key = "modelName",
+                                Match = new Match { Keyword = modelName }
+                            }
+                        }
+                    }
+                };
+
+                await _client.DeleteAsync(_collectionName, filter);
+
+                // Clean cache
+                var keysToRemove = _chunkCache
+                    .Where(kvp => kvp.Value.Metadata.TryGetValue("modelName", out var name) && name == modelName)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                foreach (var key in keysToRemove)
+                {
+                    _chunkCache.Remove(key);
+                }
+
+                _logger.LogInformation("Deleted document chunks for model: {Model}", modelName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete model vectors from Qdrant");
                 return false;
             }
         }
