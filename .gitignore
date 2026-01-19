@@ -52,3 +52,5 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+/RAGDemoBackend/Models/large/model.onnx
+/RAGDemoBackend/Models/large/model.onnx_data
