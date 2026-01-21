@@ -18,6 +18,106 @@
 
       <div class="divider"></div>
 
+      <!-- System Status Section -->
+      <div class="section">
+        <h4><i class="pi pi-chart-bar"></i> {{ 'admin.systemStatus.title' | translate }}</h4>
+        <p>{{ 'admin.systemStatus.description' | translate }}</p>
+
+        <div class="status-actions">
+          <button pButton
+                  icon="pi pi-heart"
+                  [label]="'admin.systemStatus.healthButton' | translate"
+                  class="p-button-outlined"
+                  (click)="loadHealth()"
+                  [loading]="(isLoadingHealth$ | async) ?? false"
+                  [disabled]="(isLoadingHealth$ | async) ?? false"></button>
+          <button pButton
+                  icon="pi pi-chart-line"
+                  [label]="'admin.systemStatus.statsButton' | translate"
+                  class="p-button-outlined"
+                  (click)="loadStats()"
+                  [loading]="(isLoadingStats$ | async) ?? false"
+                  [disabled]="(isLoadingStats$ | async) ?? false"></button>
+          <button pButton
+                  icon="pi pi-database"
+                  [label]="'admin.systemStatus.sourcesButton' | translate"
+                  class="p-button-outlined"
+                  (click)="loadSources()"
+                  [loading]="(isLoadingSources$ | async) ?? false"
+                  [disabled]="(isLoadingSources$ | async) ?? false"></button>
+          <button pButton
+            icon="pi pi-user"
+            [label]="'admin.systemStatus.meButton' | translate"
+            class="p-button-outlined"
+            (click)="loadMe()"
+                  [loading]="(isLoadingMe$ | async) ?? false"
+                  [disabled]="(isLoadingMe$ | async) ?? false"></button>
+        </div>
+
+        <div class="status-grid" *ngIf="(healthStatus$ | async) || (stats$ | async)">
+          <div class="status-card" *ngIf="healthStatus$ | async as healthStatus">
+            <h5>{{ 'admin.systemStatus.healthTitle' | translate }}</h5>
+            <p>{{ healthStatus.status }}</p>
+            <small>{{ healthStatus.timestamp }}</small>
+          </div>
+
+          <div class="status-card" *ngIf="stats$ | async as stats">
+            <h5>{{ 'admin.systemStatus.statsTitle' | translate }}</h5>
+            <p>{{ 'admin.systemStatus.documentChunks' | translate }}: {{ stats.documentChunks }}</p>
+            <p>{{ 'admin.systemStatus.vectorStore' | translate }}: {{ stats.vectorStore }}</p>
+            <p>{{ 'admin.systemStatus.embeddingModel' | translate }}: {{ stats.embeddingModel }}</p>
+            <small>{{ stats.timestamp }}</small>
+          </div>
+        </div>
+
+        <div class="sources-list" *ngIf="(sources$ | async)?.sources?.length">
+          <h5>{{ 'admin.systemStatus.sourcesTitle' | translate }}</h5>
+          <ul>
+            <li *ngFor="let source of (sources$ | async)?.sources">
+              <span class="source-name">{{ source.source }}</span>
+              <span class="source-meta">{{ source.chunkCount }} {{ 'admin.systemStatus.chunks' | translate }}</span>
+              <span class="source-meta">{{ source.sourceType }}</span>
+              <span class="source-meta">{{ source.latestUpdate }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="status-card" *ngIf="meInfo$ | async as meInfo">
+          <h5>{{ 'admin.systemStatus.meTitle' | translate }}</h5>
+          <p>{{ 'admin.systemStatus.meUsername' | translate }}: {{ meInfo.username }}</p>
+          <p>{{ 'admin.systemStatus.meRoles' | translate }}: {{ meInfo.roles.join(', ') }}</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Delete Document Section -->
+      <div class="section">
+        <h4><i class="pi pi-trash"></i> {{ 'admin.deleteDocument.title' | translate }}</h4>
+        <p>{{ 'admin.deleteDocument.description' | translate }}</p>
+
+        <div class="delete-form">
+          <p-select
+            [options]="(sources$ | async)?.sources || []"
+            optionLabel="source"
+            optionValue="source"
+            [placeholder]="'admin.deleteDocument.selectPlaceholder' | translate"
+            [(ngModel)]="deleteDocumentName"
+            class="delete-select"></p-select>
+          <input pInputText
+                 [(ngModel)]="deleteDocumentName"
+                 [placeholder]="'admin.deleteDocument.placeholder' | translate"
+                 class="delete-input" />
+          <button pButton
+                  icon="pi pi-trash"
+                  [label]="'admin.deleteDocument.button' | translate"
+                  class="p-button-danger"
+                  (click)="deleteDocument()"
+              [loading]="(isDeleting$ | async) ?? false"
+              [disabled]="!deleteDocumentName.trim() || ((isDeleting$ | async) ?? false)"></button>
+        </div>
+      </div>
+
       <!-- Website Ingestion Section -->
       <div class="section">
         <h4><i class="pi pi-globe"></i> {{ 'admin.websiteIngestion.title' | translate }}</h4>
@@ -31,7 +131,7 @@
               id="websiteUrl"
               [(ngModel)]="websiteUrl"
               [placeholder]="'admin.websiteIngestion.urlPlaceholder' | translate"
-              [disabled]="isIngesting"
+              [disabled]="(isIngesting$ | async) ?? false"
               class="url-input" />
           </div>
 
@@ -41,8 +141,8 @@
               id="frameworkType"
               [(ngModel)]="frameworkType"
               [options]="frameworkOptions"
-              [placeholder]="'Select framework (optional)'"
-              [disabled]="isIngesting"
+              [placeholder]="'admin.websiteIngestion.frameworkPlaceholder' | translate"
+              [disabled]="(isIngesting$ | async) ?? false"
               [showClear]="true"
               class="framework-dropdown"></p-select>
             <small class="form-hint">{{ 'admin.websiteIngestion.frameworkHint' | translate }}</small>
@@ -55,7 +155,7 @@
               id="customRoutes"
               [(ngModel)]="customRoutesText"
               [placeholder]="'admin.websiteIngestion.routesPlaceholder' | translate"
-              [disabled]="isIngesting"
+              [disabled]="(isIngesting$ | async) ?? false"
               [rows]="4"
               class="routes-input"></textarea>
             <small class="form-hint">{{ 'admin.websiteIngestion.routesHint' | translate }}</small>
@@ -67,7 +167,7 @@
                 [(ngModel)]="includeLinks"
                 [binary]="true"
                 inputId="includeLinks"
-                [disabled]="isIngesting"></p-checkbox>
+                [disabled]="(isIngesting$ | async) ?? false"></p-checkbox>
               <label for="includeLinks">{{ 'admin.websiteIngestion.includeLinkedLabel' | translate }}</label>
             </div>
 
@@ -80,7 +180,7 @@
                 [(ngModel)]="maxDepth"
                 [min]="1"
                 [max]="3"
-                [disabled]="isIngesting"
+                [disabled]="(isIngesting$ | async) ?? false"
                 class="depth-input" />
             </div>
           </div>
@@ -90,11 +190,11 @@
             [label]="'admin.websiteIngestion.button' | translate"
             icon="pi pi-download"
             (click)="ingestWebsite()"
-            [disabled]="!websiteUrl.trim() || isIngesting"
+            [disabled]="!websiteUrl.trim() || ((isIngesting$ | async) ?? false)"
             class="ingest-button"></button>
 
           <p-progressBar
-            *ngIf="isIngesting"
+            *ngIf="(isIngesting$ | async)"
             mode="indeterminate"
             [style]="{'height': '6px', 'margin-top': '16px'}"></p-progressBar>
 

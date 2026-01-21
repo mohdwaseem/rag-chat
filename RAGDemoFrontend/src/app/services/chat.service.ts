@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { ChatRequest, ChatResponse, ApiStats, UploadResponse, WebContentRequest, WebContentResponse } from '../models/chat.model';
+import { ChatRequest, ChatResponse, ApiStats, UploadResponse, WebContentRequest, WebContentResponse, HealthResponse, SourcesResponse, DeleteResponse } from '../models/chat.model';
 
 @Injectable({
   providedIn: 'root'
@@ -19,18 +19,26 @@ export class ChatService {
   uploadDocument(file: File): Observable<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<UploadResponse>(`${this.apiUrl}/chat/upload`, formData);
+    return this.http.post<UploadResponse>(`${this.apiUrl}/rag/upload`, formData);
   }
 
   getStats(): Observable<ApiStats> {
-    return this.http.get<ApiStats>(`${this.apiUrl}/chat/stats`);
+    return this.http.get<ApiStats>(`${this.apiUrl}/rag/stats`);
   }
 
   ingestUrl(request: WebContentRequest): Observable<WebContentResponse> {
-    return this.http.post<WebContentResponse>(`${this.apiUrl}/chat/ingest-url`, request);
+    return this.http.post<WebContentResponse>(`${this.apiUrl}/rag/ingest-url`, request);
   }
 
-  healthCheck(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/chat/health`);
+  healthCheck(): Observable<HealthResponse> {
+    return this.http.get<HealthResponse>(`${this.apiUrl}/rag/health`);
+  }
+
+  getSources(): Observable<SourcesResponse> {
+    return this.http.get<SourcesResponse>(`${this.apiUrl}/rag/sources`);
+  }
+
+  deleteDocument(documentName: string): Observable<DeleteResponse> {
+    return this.http.delete<DeleteResponse>(`${this.apiUrl}/rag/document/${encodeURIComponent(documentName)}`);
   }
 }

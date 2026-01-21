@@ -9,13 +9,18 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using RAGDemoBackend.Data;
+using RAGDemoBackend.Models;
 using RAGDemoBackend.Services;
 using RAGDemoBackend.Services.HealthChecks;
 using Serilog;
 using Serilog.Context;
 using Qdrant.Client;
+using System.IdentityModel.Tokens.Jwt;
 
 // Configure Serilog from appsettings.json
 var configuration = new ConfigurationBuilder()
@@ -129,20 +134,22 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            RoleClaimType = "role",
+            NameClaimType = JwtRegisteredClaimNames.Sub // Set User.Identity.Name to sub claim
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Admin", policy =>
+    builder.Services.AddAuthorization(options =>
     {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("role", "admin");
+        options.AddPolicy("Admin", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireRole("admin", "ADMIN", "Admin"); // All cases
+        });
     });
-});
 
-builder.Services.AddHttpLogging(o =>
+    builder.Services.AddHttpLogging(o =>
 {
     o.LoggingFields = HttpLoggingFields.RequestMethod |
                       HttpLoggingFields.RequestPath |
@@ -165,7 +172,26 @@ builder.Services.AddSingleton<IEmbeddingService, LocalEmbeddingService>();
 builder.Services.AddSingleton<IVectorStoreService, QdrantVectorStoreService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<IChatService, ChatService>();
-builder.Services.AddSingleton<IDevUserStore, DevUserStore>();
+
+var connectionString = builder.Configuration.GetConnectionString("RagDemoDb")
+                      ?? "Data Source=localhost;Initial Catalog=RagDemoDB;Persist Security Info=True;User ID=sa;Password=Aa@123456;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Application Name=\"SQL Server Management Studio\";Command Timeout=0";
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services
+    .AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.User.RequireUniqueEmail = false;
+    })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager();
 
 // Register a shared QdrantClient for health checks (and optionally other services)
 builder.Services.AddSingleton(sp =>
@@ -209,6 +235,53 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.EnsureCreatedAsync();
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    if (!await roleManager.RoleExistsAsync("admin"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("admin"));
+    }
+
+    if (!await roleManager.RoleExistsAsync("user"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("user"));
+    }
+
+    var adminUsername = builder.Configuration["Auth:AdminUsername"] ?? "admin";
+    var adminPassword = builder.Configuration["Auth:AdminPassword"] ?? "Admin@123456";
+    var adminUser = await userManager.FindByNameAsync(adminUsername);
+
+    if (adminUser == null)
+    {
+        adminUser = new ApplicationUser
+        {
+            UserName = adminUsername,
+            Email = $"{adminUsername}@local"
+        };
+
+        var createResult = await userManager.CreateAsync(adminUser, adminPassword);
+        if (createResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "admin");
+        }
+    }
+    else
+    {
+        var roles = await userManager.GetRolesAsync(adminUser);
+        if (!roles.Contains("admin"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "admin");
+        }
+    }
+}
 
  if (app.Environment.IsDevelopment())
 {

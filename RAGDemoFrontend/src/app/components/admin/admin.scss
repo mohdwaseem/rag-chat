@@ -217,6 +217,88 @@
       }
     }
   }
+
+  .status-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+
+    .status-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      border-left: 4px solid #667eea;
+
+      h5 {
+        margin: 0 0 0.5rem 0;
+        color: #2c3e50;
+      }
+
+      p {
+        margin: 0 0 0.25rem 0;
+        color: #555;
+      }
+
+      small {
+        color: #7f8c8d;
+      }
+    }
+  }
+
+  .sources-list {
+    margin-top: 1rem;
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .source-name {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .source-meta {
+      color: #7f8c8d;
+      font-size: 0.85rem;
+    }
+  }
+
+  .delete-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+
+    .delete-input {
+      flex: 1 1 320px;
+    }
+  }
 }
 
 @media (max-width: 768px) {

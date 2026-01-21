@@ -1,0 +1,114 @@
+<div class="floating-chat-widget" *ngIf="!isHidden">
+  <button
+    pButton
+    class="launcher-button"
+    type="button"
+    icon="pi pi-comments"
+    (click)="toggleOpen()"
+    [attr.aria-expanded]="isOpen"
+    [attr.aria-label]="'chat.title' | translate">
+  </button>
+
+  <div class="chat-panel" [class.is-open]="isOpen">
+    <div class="chat-panel-inner" [class.is-open]="isOpen" role="dialog" aria-live="polite">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="pi pi-sparkles"></i>
+          <span>{{ 'chat.title' | translate }}</span>
+        </div>
+        <button
+          pButton
+          type="button"
+          class="close-button"
+          icon="pi pi-times"
+          (click)="close()"
+          [attr.aria-label]="'chat.close' | translate">
+        </button>
+      </div>
+      <div class="panel-body">
+        <div class="chat-container">
+          <p-card class="chat-card">
+            <ng-template pTemplate="header">
+              <div class="card-header">
+                <h3><i class="pi pi-comments"></i> {{ 'chat.title' | translate }}</h3>
+                <div class="header-actions">
+                  <button pButton
+                          icon="pi pi-trash"
+                          class="p-button-rounded p-button-text"
+                          (click)="clearChat()"
+                          [pTooltip]="'chat.clearChat' | translate"></button>
+                </div>
+              </div>
+            </ng-template>
+
+            <div class="messages-container" #messageContainer>
+              <div *ngFor="let message of messages"
+                   [class.user-message]="message.isUser"
+                   [class.bot-message]="!message.isUser"
+                   class="message">
+                <div class="message-avatar" *ngIf="!message.isUser">
+                  <i class="pi pi-sparkles"></i>
+                </div>
+                <div class="message-bubble">
+                  <div class="message-content">
+                    <div class="message-text" [innerHTML]="message.isUser ? formatMessage(message.content) : formatMessage((message.content.startsWith('chat.') ? (message.content | translate) : message.content))"></div>
+                  </div>
+                  <div class="message-meta">
+                    <span class="message-time">{{ message.timestamp | date:'short' }}</span>
+                  </div>
+                </div>
+                <div class="message-avatar" *ngIf="message.isUser">
+                  <i class="pi pi-user"></i>
+                </div>
+              </div>
+
+              <div *ngIf="isLoading" class="bot-message message">
+                <div class="message-avatar">
+                  <i class="pi pi-sparkles"></i>
+                </div>
+                <div class="message-bubble">
+                  <div class="message-content loading-content">
+                    <div class="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                    <span class="loading-text">{{ 'chat.thinking' | translate }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ng-template pTemplate="footer">
+              <div class="chat-input-wrapper">
+                <div class="chat-input-container">
+                  <div class="input-field">
+                    <textarea
+                      id="chatInput"
+                      name="chatInput"
+                      pInputTextarea
+                      [(ngModel)]="userInput"
+                      (keydown)="onKeyPress($event)"
+                      [disabled]="isLoading"
+                      rows="1"
+                      [placeholder]="'chat.placeholder' | translate"
+                      class="chat-input"
+                      [autoResize]="true"
+                      aria-label="Chat message input"></textarea>
+                  </div>
+                  <button pButton
+                          icon="pi pi-send"
+                          class="send-button"
+                          (click)="sendMessage()"
+                          [disabled]="!userInput.trim() || isLoading"
+                          [pTooltip]="'chat.sendMessage' | translate"
+                          [label]="''"></button>
+                </div>
+              </div>
+            </ng-template>
+          </p-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

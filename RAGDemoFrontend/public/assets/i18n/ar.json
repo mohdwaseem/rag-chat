@@ -2,7 +2,10 @@
   "app": {
     "title": "عرض RAG التوضيحي",
     "chat": "المحادثة",
-    "admin": "الإدارة"
+    "admin": "الإدارة",
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "logout": "تسجيل الخروج"
   },
   "chat": {
     "title": "روبوت المحادثة بتقنية RAG",
@@ -31,6 +34,7 @@
       "urlLabel": "رابط الموقع",
       "urlPlaceholder": "https://example.com",
       "frameworkLabel": "نوع إطار عمل الموقع",
+      "frameworkPlaceholder": "حدد إطار العمل (اختياري)",
       "frameworkHint": "حدد إذا كان الموقع يستخدم إطار عمل JavaScript",
       "routesLabel": "المسارات المراد استخراجها",
       "routesPlaceholder": "أدخل المسارات مفصولة بفواصل أو أسطر جديدة\nمثال: /home, /about, /products, /contact",
@@ -64,6 +68,42 @@
         "linkedPages": "الصفحات المرتبطة: الزحف الاختياري وفهرسة الصفحات المرتبطة حتى 3 مستويات",
         "processing": "المعالجة: يتم تقسيم جميع المحتويات تلقائياً وتضمينها للبحث الدلالي"
       }
+    },
+    "systemStatus": {
+      "title": "حالة النظام",
+      "description": "تحقق من صحة الخدمة والإحصائيات والمصادر.",
+      "healthButton": "الصحة",
+      "statsButton": "الإحصائيات",
+      "sourcesButton": "المصادر",
+      "healthTitle": "الصحة",
+      "statsTitle": "الإحصائيات",
+      "sourcesTitle": "المصادر",
+      "documentChunks": "عدد القطع",
+      "vectorStore": "مخزن المتجهات",
+      "embeddingModel": "نموذج التضمين",
+      "chunks": "قطع",
+      "healthErrorTitle": "فشل فحص الصحة",
+      "healthErrorMessage": "تعذر جلب حالة الصحة.",
+      "statsErrorTitle": "فشل الإحصائيات",
+      "statsErrorMessage": "تعذر جلب الإحصائيات.",
+      "sourcesErrorTitle": "فشل المصادر",
+      "sourcesErrorMessage": "تعذر جلب المصادر.",
+      "meButton": "حسابي",
+      "meTitle": "المستخدم الحالي",
+      "meUsername": "اسم المستخدم",
+      "meRoles": "الأدوار",
+      "meErrorTitle": "فشل المستخدم",
+      "meErrorMessage": "تعذر جلب بيانات المستخدم الحالي."
+    },
+    "deleteDocument": {
+      "title": "حذف مستند",
+      "description": "إزالة مستند وقطعه حسب الاسم.",
+      "selectPlaceholder": "اختر مستنداً",
+      "placeholder": "أدخل اسم المستند",
+      "button": "حذف",
+      "successTitle": "تم حذف المستند",
+      "errorTitle": "فشل الحذف",
+      "errorMessage": "تعذر حذف المستند."
     }
   },
   "documentUpload": {
@@ -73,6 +113,30 @@
     "invalidFileTitle": "ملف غير صالح",
     "invalidFileMessage": "يرجى تحديد ملف PDF",
     "uploadFailedMessage": "فشل رفع المستند. تأكد من تشغيل الخادم الخلفي."
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "button": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟"
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "button": "إنشاء حساب",
+      "hasAccount": "لديك حساب بالفعل؟"
+    },
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "role": "الدور",
+    "usernamePlaceholder": "أدخل اسم المستخدم",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين",
+    "roles": {
+      "user": "مستخدم",
+      "admin": "مدير"
+    }
   },
   "common": {
     "languageSwitcher": {

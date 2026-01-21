@@ -7,11 +7,26 @@
               icon="pi pi-comments"
               [label]="'app.chat' | translate"
               class="p-button-text"></button>
-      <button pButton
+            <button *ngIf="isAdmin" pButton
               routerLink="/admin"
               icon="pi pi-cog"
               [label]="'app.admin' | translate"
               class="p-button-text"></button>
+            <button *ngIf="!isAuthenticated" pButton
+              routerLink="/login"
+              icon="pi pi-sign-in"
+              [label]="'app.login' | translate"
+              class="p-button-text"></button>
+            <button *ngIf="!isAuthenticated" pButton
+              routerLink="/register"
+              icon="pi pi-user-plus"
+              [label]="'app.register' | translate"
+              class="p-button-text"></button>
+            <button *ngIf="isAuthenticated" pButton
+              icon="pi pi-sign-out"
+              [label]="'app.logout' | translate"
+              class="p-button-text"
+              (click)="logout()"></button>
       <p-select
         [(ngModel)]="currentLanguage"
         [options]="languages"
@@ -33,4 +48,6 @@
 </nav>
 
 <router-outlet></router-outlet>
+
+<app-floating-chat-widget [apiBase]="apiBase" [hideOnRoutes]="['/admin', '/login', '/register']"></app-floating-chat-widget>
 

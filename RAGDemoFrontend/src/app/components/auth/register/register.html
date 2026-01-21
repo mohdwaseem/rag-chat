@@ -1,0 +1,62 @@
+<div class="auth-container">
+  <p-card>
+    <h2>{{ 'auth.register.title' | translate }}</h2>
+
+    <div class="field">
+      <label for="username">{{ 'auth.username' | translate }}</label>
+      <input
+        id="username"
+        type="text"
+        pInputText
+        [(ngModel)]="username"
+        [placeholder]="'auth.usernamePlaceholder' | translate" />
+    </div>
+
+    <div class="field">
+      <label for="password">{{ 'auth.password' | translate }}</label>
+      <input
+        id="password"
+        type="password"
+        pInputText
+        [(ngModel)]="password"
+        [placeholder]="'auth.passwordPlaceholder' | translate" />
+    </div>
+
+    <div class="field">
+      <label for="confirmPassword">{{ 'auth.confirmPassword' | translate }}</label>
+      <input
+        id="confirmPassword"
+        type="password"
+        pInputText
+        [(ngModel)]="confirmPassword"
+        [placeholder]="'auth.confirmPasswordPlaceholder' | translate" />
+    </div>
+
+    <div class="field" *ngIf="isAdmin">
+      <label for="role">{{ 'auth.role' | translate }}</label>
+      <p-select
+        id="role"
+        [options]="roleOptions"
+        [(ngModel)]="selectedRole"
+        optionLabel="label"
+        optionValue="value"></p-select>
+    </div>
+
+    <div class="error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <button
+      pButton
+      type="button"
+      class="p-button-raised"
+      [label]="'auth.register.button' | translate"
+      [disabled]="isLoading || !username || !password || !confirmPassword"
+      (click)="submit()"></button>
+
+    <div class="auth-links">
+      <span>{{ 'auth.register.hasAccount' | translate }}</span>
+      <a routerLink="/login">{{ 'auth.login.title' | translate }}</a>
+    </div>
+  </p-card>
+</div>

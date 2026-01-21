@@ -1,0 +1,190 @@
+/*
+ * =============================================================================
+ *  This stylesheet was created by Banan Al-Alasmari - ELM.
+ *  Do not change or modify without permission.
+ * =============================================================================
+ */
+
+html {
+    position: relative;
+    min-height: 100%;
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+@font-face {
+    font-family: "din";
+    src: url("../../fonts/DINNext.eot");
+    src:
+        url("../../fonts/DINNext.ttf") format("truetype"),
+        url("../../fonts/DINNext.woff") format("woff"),
+        url("../../fonts/DINNext.svg") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "dinMedium";
+    src: url("../../fonts/DINNextLTArabic-Medium-2.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "dinMeduim";
+    src: url("../../fonts/DINNextBold.eot");
+    src:
+        url("../../fonts/DINNextBold.eot?#iefix") format("embedded-opentype"),
+        url("../../fonts/DINNextBold.ttf") format("truetype"),
+        url("../../fonts/DINNextBold.woff") format("woff"),
+        url("../../fonts/DINNextBold.svg#DINNext") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "dinBold";
+    src: url("../../fonts/DINNextLTArabic-Bold-4.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "dinBlack";
+    src: url("../../fonts/DINNextLTArabic-Heavy-1.ttf") format("truetype");
+}
+
+a,
+input,
+button,
+.btn {
+    -webkit-transition: all 0.3s ease;
+    -webkit-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+a {
+    cursor: pointer;
+}
+
+*::-moz-selection {
+    background: #ccc;
+    color: #333;
+}
+
+*::selection {
+    background: #ccc;
+    color: #333;
+}
+
+*::-moz-selection {
+    background: #ccc;
+    color: #333;
+}
+
+*::-webkit-selection {
+    background: #ccc;
+    color: #333;
+}
+
+.clearfix {
+    clear: both;
+}
+
+a,
+a:hover,
+a:focus {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    border: 0;
+}
+
+h2 {
+    font-size: 30px;
+}
+
+.required:after {
+    content: "*";
+    color: red;
+    font-size: 1.2rem;
+    display: inline;
+    line-height: 1;
+}
+.d-flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.d-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+// fix button line height for "din" family
+.btn:not(.dropdown-toggle) {
+    &:before {
+        content: "";
+        display: inline-block;
+        vertical-align: middle;
+        height: 24px;
+    }
+    &.btn-sm:before {
+        height: 16px;
+    }
+    &.btn-lg:before {
+        height: 34px;
+    }
+}
+// background blur effect
+.blurred {
+    backdrop-filter: blur(10px);
+}
+// shadow and animation hover effects
+.hover-shadow {
+    transition: all 0.5s ease-in-out;
+    &:hover,
+    &:focus {
+        @extend .shadow;
+    }
+}
+.hover-x-10 {
+    transition: all 0.5s ease-in-out;
+    &:hover,
+    &:focus {
+        transform: translateX(-10px);
+    }
+}
+.hover-y-10 {
+    transition: all 0.5s ease-in-out;
+    &:hover,
+    &:focus {
+        transform: translateY(-10px);
+    }
+}
+// editing bootstrap color mode
+[data-bs-theme="dark"] {
+    --bs-white-rgb: 0, 0, 0;
+    --bs-dark-rgb: 250, 250, 250;
+    --bs-light-rgb: 43, 48, 53;
+    --bs-black-rgb: 255, 255, 255;
+}
+.d-rtl-block {
+    display: none !important;
+    [dir="rtl"] & {
+        display: block !important;
+    }
+}
+.d-ltr-block {
+    display: none !important;
+    [dir="ltr"] & {
+        display: block !important;
+    }
+}
+
+.bold {
+    font-family: $bold;
+}
+
+
+.p-dialog .p-dialog-header { 
+    font-family: "din";
+}

@@ -2,7 +2,10 @@
   "app": {
     "title": "RAG Demo",
     "chat": "Chat",
-    "admin": "Admin"
+    "admin": "Admin",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
   },
   "chat": {
     "title": "RAG Demo Chatbot",
@@ -31,6 +34,7 @@
       "urlLabel": "Website URL",
       "urlPlaceholder": "https://example.com",
       "frameworkLabel": "Website Framework Type",
+      "frameworkPlaceholder": "Select framework (optional)",
       "frameworkHint": "Select if the website uses a JavaScript framework",
       "routesLabel": "Routes to Scrape",
       "routesPlaceholder": "Enter routes separated by commas or new lines\nExample: /home, /about, /products, /contact",
@@ -64,6 +68,42 @@
         "linkedPages": "Linked Pages: Optionally crawl and index linked pages up to 3 levels deep",
         "processing": "Processing: All content is automatically chunked and embedded for semantic search"
       }
+    },
+    "systemStatus": {
+      "title": "System Status",
+      "description": "Check the RAG service health, stats, and sources.",
+      "healthButton": "Health",
+      "statsButton": "Stats",
+      "sourcesButton": "Sources",
+      "healthTitle": "Health",
+      "statsTitle": "Stats",
+      "sourcesTitle": "Sources",
+      "documentChunks": "Document Chunks",
+      "vectorStore": "Vector Store",
+      "embeddingModel": "Embedding Model",
+      "chunks": "chunks",
+      "healthErrorTitle": "Health Check Failed",
+      "healthErrorMessage": "Unable to fetch health status.",
+      "statsErrorTitle": "Stats Failed",
+      "statsErrorMessage": "Unable to fetch stats.",
+      "sourcesErrorTitle": "Sources Failed",
+      "sourcesErrorMessage": "Unable to fetch sources.",
+      "meButton": "Me",
+      "meTitle": "Current User",
+      "meUsername": "Username",
+      "meRoles": "Roles",
+      "meErrorTitle": "Me Failed",
+      "meErrorMessage": "Unable to fetch current user."
+    },
+    "deleteDocument": {
+      "title": "Delete Document",
+      "description": "Remove a document and its chunks by name.",
+      "selectPlaceholder": "Select a document",
+      "placeholder": "Enter document name",
+      "button": "Delete",
+      "successTitle": "Document Deleted",
+      "errorTitle": "Delete Failed",
+      "errorMessage": "Unable to delete document."
     }
   },
   "documentUpload": {
@@ -73,6 +113,30 @@
     "invalidFileTitle": "Invalid File",
     "invalidFileMessage": "Please select a PDF file",
     "uploadFailedMessage": "Failed to upload document. Make sure the backend is running."
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "button": "Sign in",
+      "noAccount": "Don't have an account?"
+    },
+    "register": {
+      "title": "Register",
+      "button": "Create account",
+      "hasAccount": "Already have an account?"
+    },
+    "username": "Username",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "role": "Role",
+    "usernamePlaceholder": "Enter your username",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "passwordMismatch": "Passwords do not match",
+    "roles": {
+      "user": "User",
+      "admin": "Admin"
+    }
   },
   "common": {
     "languageSwitcher": {

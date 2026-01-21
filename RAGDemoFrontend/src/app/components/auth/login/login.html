@@ -1,0 +1,42 @@
+<div class="auth-container">
+  <p-card>
+    <h2>{{ 'auth.login.title' | translate }}</h2>
+
+    <div class="field">
+      <label for="username">{{ 'auth.username' | translate }}</label>
+      <input
+        id="username"
+        type="text"
+        pInputText
+        [(ngModel)]="username"
+        [placeholder]="'auth.usernamePlaceholder' | translate" />
+    </div>
+
+    <div class="field">
+      <label for="password">{{ 'auth.password' | translate }}</label>
+      <input
+        id="password"
+        type="password"
+        pInputText
+        [(ngModel)]="password"
+        [placeholder]="'auth.passwordPlaceholder' | translate" />
+    </div>
+
+    <div class="error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <button
+      pButton
+      type="button"
+      class="p-button-raised"
+      [label]="'auth.login.button' | translate"
+      [disabled]="isLoading || !username || !password"
+      (click)="submit()"></button>
+
+    <div class="auth-links">
+      <span>{{ 'auth.login.noAccount' | translate }}</span>
+      <a routerLink="/register">{{ 'auth.register.title' | translate }}</a>
+    </div>
+  </p-card>
+</div>

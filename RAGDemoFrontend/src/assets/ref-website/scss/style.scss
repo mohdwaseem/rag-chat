@@ -1,0 +1,32 @@
+/*
+ * =============================================================================
+ *  This stylesheet was created by Banan Al-Alasmari - ELM.
+ *  Do not change or modify without permission.
+ * =============================================================================
+ */
+$primary: #0d0749;
+$secondary: #2a6ebb;
+$third: #005f8e;
+$enable-negative-margins: true;
+$family: 'din';
+$bold: 'dinMeduim';
+$extra-bold: 'dinBold';
+
+:root {
+    --bs-primary-text: #0d0749 !important;
+    --bs-body-font-family: 'din' !important;
+}
+
+@import 'bootstrap/bootstrap'; // v5.3.0 // local version so you can control imported components - please remove any unused components u don't need.
+
+@import 'sub/rtl'; // to enable two directions support - remove this file if u use english only
+
+@import 'sub/layouts'; // to custom layouts
+
+@import 'sub/_reset'; // reset css with some useful extra style
+
+@import 'sub/_animation'; // basic animation style
+
+@import 'sub/_custom'; // add your custom style here
+
+@import 'sub/_media-queries'; // empty media queries

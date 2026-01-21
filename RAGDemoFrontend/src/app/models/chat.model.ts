@@ -22,7 +22,31 @@ export interface ApiStats {
   documentChunks: number;
   vectorStore: string;
   embeddingModel: string;
+  embeddingDimension?: number;
   timestamp: string;
+}
+
+export interface HealthResponse {
+  status: string;
+  timestamp: string;
+}
+
+export interface SourceStat {
+  source: string;
+  chunkCount: number;
+  sourceType: string;
+  latestUpdate: string;
+}
+
+export interface SourcesResponse {
+  totalChunks: number;
+  totalSources: number;
+  sources: SourceStat[];
+  timestamp: string;
+}
+
+export interface DeleteResponse {
+  message: string;
 }
 
 export interface UploadResponse {

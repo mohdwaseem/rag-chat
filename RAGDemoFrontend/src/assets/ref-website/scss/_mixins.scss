@@ -1,0 +1,154 @@
+@mixin font-face(
+  $font-family,
+  $file-path,
+  $weight: normal,
+  $style: normal,
+  $asset-pipeline: false
+) {
+  @font-face {
+    font-family: $font-family;
+    font-weight: $weight;
+    font-style: $style;
+
+    @if $asset-pipeline == true {
+      src: font-url("#{$file-path}.eot");
+      src: font-url("#{$file-path}.eot?#iefix") format("embedded-opentype"),
+        font-url("#{$file-path}.woff") format("woff"),
+        font-url("#{$file-path}.ttf") format("truetype");
+    } @else {
+      src: url("#{$file-path}.eot");
+      src: url("#{$file-path}.eot?#iefix") format("embedded-opentype"),
+        url("#{$file-path}.woff") format("woff"),
+        url("#{$file-path}.ttf") format("truetype");
+    }
+  }
+}
+
+@mixin RTL {
+  [dir="rtl"] & {
+    @content;
+  }
+}
+
+@mixin LTR {
+  [dir="ltr"] & {
+    @content;
+  }
+}
+
+
+// Bootstrap 4 mixins for spacing utilities without classes
+// https://gist.github.com/passcod/a44db3503799cb89c3ccea3f75ca715e
+
+@function map-get-or-key($map, $key) {
+	@if map-has-key($map, $key) or map-has-key($map, -$key) {
+		@if $key != 'auto' and type-of($key) == 'number' and $key < 0 {
+			@return 0 - map-get($map, -$key);
+		} @else {
+			@return map-get($map, $key);
+		}
+	} @else if type-of($key) == 'string' {
+		@return unquote($key);
+	} @else {
+		@return $key;
+	}
+}
+
+@function bsize($key) {
+	@return map-get-or-key($spacers, $key);
+}
+
+@mixin m($space) {
+	margin: bsize($space);
+}
+
+@mixin mt($space) {
+	margin-top: bsize($space);
+}
+
+@mixin mb($space) {
+	margin-bottom: bsize($space);
+}
+
+@mixin ml($space) {
+	margin-left: bsize($space);
+}
+
+@mixin mr($space) {
+	margin-right: bsize($space);
+}
+
+@mixin p($space) {
+	padding: bsize($space);
+}
+
+@mixin pt($space) {
+	padding-top: bsize($space);
+}
+
+@mixin pb($space) {
+	padding-bottom: bsize($space);
+}
+
+@mixin pl($space) {
+	padding-left: bsize($space);
+}
+
+@mixin pr($space) {
+	padding-right: bsize($space);
+}
+
+@mixin mx($space) {
+	@include ml($space);
+	@include mr($space);
+}
+
+@mixin my($space) {
+	@include mt($space);
+	@include mb($space);
+}
+
+@mixin px($space) {
+	@include pl($space);
+	@include pr($space);
+}
+
+@mixin py($space) {
+	@include pt($space);
+	@include pb($space);
+}
+
+
+
+// Flexbox Toolkit
+
+@mixin flex-column {
+	display: flex;
+	flex-direction: column;
+  }
+  
+  @mixin flex-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+  @mixin flex-center-between {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+  }
+  
+  @mixin flex-center-column {
+	@include flex-center;
+	flex-direction: column;
+  }
+  
+  @mixin flex-center-vert {
+	display: flex;
+	align-items: center;
+  }
+  
+  @mixin flex-center-horiz {
+	display: flex;
+	justify-content: center;
+  }

@@ -1,0 +1,43 @@
+/*
+ * =============================================================================
+ *  This stylesheet was created by Banan Al-Alasmari - ELM.
+ *  Do not change or modify without permission.
+ * =============================================================================
+ */
+
+html,
+body {
+  // height: 100%;
+  margin: 0;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 60px;
+
+}
+
+.content {
+  flex: 1;
+}
+
+.footer {
+  background-color: #f8f9fa; /* Optional styling */
+  padding: 1rem;
+  text-align: center;
+}
+
+.page-layout {
+  ul {
+    margin-bottom: 0rem;
+  }
+}
+
+.form-control {
+  font-family: 'din';
+}

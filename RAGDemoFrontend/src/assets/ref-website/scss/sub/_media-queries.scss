@@ -1,0 +1,372 @@
+/*
+ * =============================================================================
+ *  This stylesheet was created by Banan Al-Alasmari - ELM.
+ *  Do not change or modify without permission.
+ * =============================================================================
+ */
+
+/* ============================================================================
+   Media Queries
+   ============================================================================ */
+
+/* Extra large devices (≥ 1400px) */
+@media (width: 1400px) {
+  html,
+  body {
+    font-size: 16px;
+  }
+
+  .container {
+    max-width: 1140px;
+  }
+  .decorative-line {
+    position: absolute;
+    top: 12.5%;
+    left: 19.5%;
+  }
+}
+
+@media screen and (device-width: 1536px) and (device-height: 960px) {
+  .number-line {
+    position: absolute;
+    margin: 0 auto;
+    bottom: 660px;
+    left: 800px !important;
+    z-index: -1000;
+  }
+}
+
+/* Large devices (≤ 1330px) */
+@media (max-width: 1330px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* Medium devices (≤ 992px) */
+@media (max-width: 992px) {
+  html,
+  body {
+    font-size: 15px;
+  }
+
+  .container {
+    --bs-gutter-x: 3rem;
+  }
+}
+
+/* Small devices (≤ 767px) */
+@media (max-width: 767px) {
+  html,
+  body {
+    font-size: 15px;
+    overflow-x: hidden;
+  }
+
+  .container {
+    --bs-gutter-x: 2rem !important;
+  }
+
+  .page-content {
+    padding: 10px;
+  }
+
+  /* Landing Section Styles */
+  .landing {
+    .main-section {
+      .lap-top {
+        position: relative;
+        left: 0;
+        top: 0;
+
+        [dir="rtl"] & {
+          left: auto;
+          right: 0;
+        }
+      }
+
+      .step {
+        text-align: center;
+      }
+
+      .step-icon {
+        margin: 0 auto; /* Center the icon */
+      }
+
+      .hero-title {
+        margin-top: 30%;
+
+        h1 {
+          font-size: 60px;
+          margin-bottom: 1.5rem;
+        }
+      }
+    }
+
+    .works-section,
+    .securely-section,
+    .numbers-sections {
+      height: 100%;
+    }
+
+    .works-section {
+      .icon {
+        height: 11vh;
+      }
+    }
+
+    .dhamen-video {
+      top: 70%;
+      left: 0;
+      transform: translate(-50%, -50%);
+      width: 900px;
+      height: 100%;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .who-section {
+      margin-top: 4rem !important;
+      margin-bottom: 2rem !important;
+    }
+  }
+
+  /* Landing Header */
+  .landing-header {
+    .navbar {
+      z-index: 1050;
+      background: linear-gradient(to left, rgba(255, 255, 255, 0) 4.69%, rgba(193, 208, 229, 0.56));
+    }
+
+    .navbar.scrolled {
+      position: fixed;
+      width: 100%;
+    }
+
+    .navbar-collapse {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 70%;
+      height: 100vh;
+      background-color: #ffffff;
+      overflow-x: auto;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      border: 1px solid #d6d6d6;
+      z-index: 1060;
+    }
+
+    .navbar-collapse.show {
+      transform: translateX(0);
+    }
+
+    .btn-close {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      [dir="ltr"] & {
+        left: auto;
+        right: 0;
+      }
+      z-index: 1100;
+    }
+  }
+
+  .nav-open {
+    background: #4f4f4f;
+
+    .navbar {
+      background-color: #4f4f4f;
+    }
+  }
+
+  .mobile-btn {
+    button {
+      width: 100%;
+      display: block;
+    }
+  }
+
+  /* Other Small Device Specific Styles */
+  .login-container .login-card {
+    background-image: unset;
+    width: 100%;
+  }
+
+  .timeline {
+    left: auto;
+    right: 0;
+
+    [dir="rtl"] & {
+      right: auto;
+      left: 0;
+    }
+  }
+
+  .dhamen-image {
+    height: 100%;
+  }
+
+  .hero-section {
+    height: 100%;
+    margin-top: 22%;
+  }
+
+  .about-section p {
+    width: 90%;
+  }
+
+  .lap-top {
+    position: relative;
+    top: -21%;
+  }
+
+  .container {
+    --bs-gutter-x: 4rem;
+  }
+  .dhamen-bg {
+    background-size: 100%;
+    height: 50vh;
+  }
+  .numbers-sections {
+    margin-top: 8%;
+  }
+
+  .dhamen-works {
+    position: relative;
+    top: unset;
+  }
+
+  .dhamen-wroks-h {
+    height: 100%;
+  }
+  .features-section {
+    position: relative;
+    top: 0;
+  }
+
+  .numbers-sections {
+    height: 100%;
+  }
+  .who-section {
+    .text-end {
+      text-align: center !important;
+    }
+  }
+  .tablet-bg {
+    position: relative;
+    top: -30%;
+    right: 20px;
+    z-index: 10000;
+    [dir="ltr"] & {
+      left: 40px;
+    }
+  }
+
+  .number-bg {
+    background: var(--Gradeint, linear-gradient(110deg, rgba(89, 205, 186, 0.30) -3.85%, #FFE299 99.44%, rgba(255, 255, 255, 0.00) 99.46%));
+  }
+  .forgot-password-page {
+    background: linear-gradient(135deg, rgba(89, 205, 186, 0.07) 10%, rgba(255, 226, 153, 0.24) 90%) !important;
+  }
+
+  // .dhamen-bg {
+  //   background-image: url("../../../assets/images/main-bg-2-mobile.svg"); // Arabic version
+  // }
+
+  // html[dir="ltr"] .dhamen-bg {
+  //   background-image: url("../../../assets/images/main-bg-2-mobile-en.svg"); // English version
+
+  // }
+
+  // .dhamen-bg {
+  //   background-image: url("../../../assets/images/main-bg-2-mobile(no-lines).svg"); // Arabic version
+  //   background-size: 80% auto; // Make background smaller
+  //   background-repeat: no-repeat;
+  //   background-position: center;
+  // }
+
+  // html[dir="ltr"] .dhamen-bg {
+  //   background-image: url("../../../assets/images/main-bg-2-mobile-en(no-lines).svg"); // English version
+  //   background-size: 80% auto; // Make background smaller
+  //   background-repeat: no-repeat;
+  //   background-position: center;
+  // }
+
+  .dhamen-bg {
+    background: none !important;
+  }
+
+  .dashboard-img {
+    max-width: 80%;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  /* Card Animation Classes */
+  .card-total-paid {
+    animation: none;
+  }
+
+  .card-total-unpaid {
+    animation: none;
+  }
+
+  .card-total-refunded {
+    animation: none;
+  }
+footer {
+  .input-group > .form-control,
+  .input-group {
+    position: relative;
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+  .dhamen-color {
+    height: 100%;
+  }
+  .top-lap {
+    position: relative;
+    top: 0%;
+  }
+  .header-bg {
+    margin: 12px;
+  }
+  .menu-content {
+    top: -25px !important;
+    overflow: inherit;
+  }
+}
+
+/* Extra small devices (≤ 400px) */
+@media (max-width: 400px) {
+  /* Add your styles here for screens smaller than 400px */
+}
+
+@media screen and (width: 1280px) {
+  .decorative-line {
+    top: 13.2%;
+    left: 0;
+  }
+  .decorative-line-4 {
+    top: 66%;
+    right: 5%;
+  }
+  .decorative-line-3 {
+    position: absolute;
+    top: 42.5%;
+    left: 46.6%;
+  }
+  .decorative-line-2 {
+    left: 48.5%;
+  }
+  .number-line {
+    position: absolute;
+    margin: 0 auto;
+    bottom: 700px;
+    left: 600px;
+    z-index: -1000;
+  }
+}
